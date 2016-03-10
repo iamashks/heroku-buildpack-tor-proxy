@@ -8,7 +8,9 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
-TOR_SRC_URL=$(cat ${ENV_DIR}/TOR_SRC_URL)
+if [[ -e "${ENV_DIR}/TOR_SRC_URL" ]]; then
+    TOR_SRC_URL=$(cat ${ENV_DIR}/TOR_SRC_URL)
+fi
 
 if [[ -z "${TOR_SRC_URL}" ]]; then
     TOR_SRC_URL="https://www.torproject.org/dist/tor-0.2.7.6.tar.gz"
