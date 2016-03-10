@@ -67,8 +67,8 @@ cat > ${BUILD_DIR}/bin/hide <<EOF
 mkdir -p "${HOME}/hidden_service"
 
 echo "Setting up hidden service"
-echo ${HIDDEN_PRIVATE_KEY} > ${HOME}/hidden_service/private_key
-echo ${HIDDEN_DOT_ONION} > ${HOME}/hidden_service/hostname
+echo \${HIDDEN_PRIVATE_KEY} > ${HOME}/hidden_service/private_key
+echo \${HIDDEN_DOT_ONION} > ${HOME}/hidden_service/hostname
 
 echo "HiddenServiceDir ${HOME}/hidden_service/" > $HOME/etc/tor/torrc
 echo "HiddenServicePort 80 127.0.0.1:${PORT}" >> $HOME/etc/tor/torrc
