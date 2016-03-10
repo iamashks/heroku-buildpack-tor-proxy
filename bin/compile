@@ -14,12 +14,12 @@ if [[ -z "${TOR_SRC_URL}" ]]; then
     TOR_SRC_URL="https://www.torproject.org/dist/tor-0.2.7.6.tar.gz"
 fi
 
-# if [[ -e "$CACHE_DIR/.src-dist" ]]; then
-#     if [[ "$(cat $CACHE_DIR/.src-dist)" == "${TOR_SRC_URL}" ]]; then
-#         echo "This version of Tor has already been built. Skipping." | indent
-#         exit 0
-#     fi
-# fi
+if [[ -e "$CACHE_DIR/.src-dist" ]]; then
+    if [[ "$(cat $CACHE_DIR/.src-dist)" == "${TOR_SRC_URL}" ]]; then
+        echo "This version of Tor has already been built. Skipping." | indent
+        exit 0
+    fi
+fi
 
 wget -q $TOR_SRC_URL
 if ! [ $? ]; then
