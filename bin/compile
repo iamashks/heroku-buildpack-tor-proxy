@@ -64,6 +64,25 @@ if ! [ $? ]; then
     echo "FAILED to run make install" | indent
 fi
 
+# Cache builds to avoid unnecessary wait times.
 echo $TOR_SRC_URL > $CACHE_DIR/.src-dist
+
+cat > ${BUILD_DIR}/bin/hide <<EOF
+#!/usr/bin/env bash
+
+mkdir -p "${HOME}/hidden_service"
+
+echo "Setting up hidden service"
+echo ${HIDDEN_PRIVATE_KEY} > ${HOME}/hidden_service/private_key
+echo ${HIDDEN_DOT_ONION} > ${HOME}/hidden_service/hostname
+
+echo "HiddenServiceDir ${HOME}/hidden_service/" > $HOME/etc/tor/torrc
+echo "HiddenServicePort 80 127.0.0.1:${PORT}" >> $HOME/etc/tor/torrc
+
+$HOME/bin/tor &
+exec `echo $*`
+EOF
+
+chmod a+x ${BUILD_DIR}/bin/hide
 
 echo "Installed Tor successfully" | indent
