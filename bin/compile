@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+indent() {
+    sed -u 's/^/      /'
+}
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+TOR_SRC_URL=$(cat ${ENV_DIR}/TOR_SRC_URL)
+
+if [[ -z "${TOR_SRC_URL}" ]]; then
+    TOR_SRC_URL="https://www.torproject.org/dist/tor-0.2.7.6.tar.gz"
+fi
+
+if [[ -e "$CACHE_DIR/.src-dist" ]]; then
+    if [[ "$(cat $CACHE_DIR/.src-dist)" == "${TOR_SRC_URL}" ]]; then
+        echo "This version of Tor has already been built. Skipping." | indent
+        exit 0
+    fi
+fi
+
+wget -q $TOR_SRC_URL
+if ! [ $? ]; then
+    echo "FAILED to obtain tor src" | indent
+    exit 1
+fi
+
+## TODO: Need to figure out how to verify properly.
+# TOR_SRC_SIG=${TOR_SRC_URL}.asc
+# wget -q $TOR_SRC_SIG
+# if ! [ $? ]; then
+#     echo "FAILED to obtain tor src signature file" | indent
+#     exit 1
+# fi
+
+# # Receive the Tor signers key
+# gpg --keyserver x-hkp://pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
+# if ! [ $? ]; then
+#     echo "FAILED to recv key for signature verification" | indent
+#     exit 1
+# fi
+
+# gpg --verify $BUILD_DIR/tor-*.tar.gz{.asc,} | grep "Good signature"
+# if ! [ $? ]; then
+#     echo "FAILED to verify integrity of downloaded tarball. Aborting!!!!" | indent
+#     exit 1
+# fi
+
+# Finally do some compilation.
+tar -zxf tor-*.tar.gz
+cd tor-*
+./configure --prefix=/app/tor
+if ! [ $? ]; then
+    echo "FAILED to configure for compliation" | indent
+    exit 1
+fi
+
+make install
+if ! [ $? ]; then
+    echo "FAILED to run make install" | indent
+fi
+
+echo $TOR_SRC_URL > $CACHE_DIR/.src-dist
+
+echo "Installed Tor successfully" | indent
