@@ -71,7 +71,7 @@ echo \${HIDDEN_PRIVATE_KEY} > ${HOME}/hidden_service/private_key
 echo \${HIDDEN_DOT_ONION} > ${HOME}/hidden_service/hostname
 
 echo "HiddenServiceDir ${HOME}/hidden_service/" > $HOME/etc/tor/torrc
-echo "HiddenServicePort 80 127.0.0.1:${PORT}" >> $HOME/etc/tor/torrc
+echo "HiddenServicePort 80 127.0.0.1:\${PORT}" >> $HOME/etc/tor/torrc
 
 # Use -f to be safe here.
 $HOME/bin/tor -f $HOME/etc/tor/torrc &
