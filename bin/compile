@@ -74,7 +74,7 @@ echo "HiddenServiceDir ${HOME}/hidden_service/" > $HOME/etc/tor/torrc
 echo "HiddenServicePort 80 127.0.0.1:${PORT}" >> $HOME/etc/tor/torrc
 
 $HOME/bin/tor &
-exec `echo $*`
+exec \$*
 EOF
 
 chmod a+x ${BUILD_DIR}/bin/hide
