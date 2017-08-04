@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+## VARIABLES
+RUN_COMMAND=run_tor
+TOR_SRC_NAME=tor-0.3.0.10.tar.gz
+TOR_DIST_URL=https://www.torproject.org/dist/
+
+
+## --
+
+set -x
+
 indent() {
     sed -u 's/^/      /'
 }
@@ -7,61 +17,64 @@ indent() {
 BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
+TOR_SIG_NAME=${TOR_SRC_NAME}.asc
+TOR_SRC_URL=${TOR_DIST_URL}${TOR_SRC_NAME}
+TOR_SRC_SIG_URL=${TOR_DIST_URL}${TOR_SIG_NAME}
 
-if [[ -e "${ENV_DIR}/TOR_SRC_URL" ]]; then
-    TOR_SRC_URL=$(cat ${ENV_DIR}/TOR_SRC_URL)
-fi
 
-if [[ -z "${TOR_SRC_URL}" ]]; then
-    TOR_SRC_URL="https://www.torproject.org/dist/tor-0.2.7.6.tar.gz"
-fi
 
+################################################################################
+# GET SOURCES
+################################################################################
+echo "Downloading ${TOR_SRC_URL}"
 wget -q $TOR_SRC_URL
 
-if ! [ $? ]; then
-    echo "FAILED to obtain tor src" | indent
+if [ $? - ne 0]; then
+    echo "FAILED to obtain ${TOR_SRC_URL}" | indent
     exit 1
 fi
 
-## TODO: Need to figure out how to verify properly.
-# TOR_SRC_SIG=${TOR_SRC_URL}.asc
-# wget -q $TOR_SRC_SIG
-# if ! [ $? ]; then
-#     echo "FAILED to obtain tor src signature file" | indent
-#     exit 1
-# fi
+echo "Downloading ${TOR_SRC_SIG_URL}"
+wget -q $TOR_SRC_SIG_URL
 
-# # Receive the Tor signers key
-# gpg --keyserver x-hkp://pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
-# if ! [ $? ]; then
-#     echo "FAILED to recv key for signature verification" | indent
-#     exit 1
-# fi
+if [ $? -ne 0 ]; then
+    echo "FAILED to obtain signature ${TOR_SRC_SIG_URL}" | indent
+    exit 1
+fi
 
-# gpg --verify $BUILD_DIR/tor-*.tar.gz{.asc,} | grep "Good signature"
-# if ! [ $? ]; then
-#     echo "FAILED to verify integrity of downloaded tarball. Aborting!!!!" | indent
-#     exit 1
-# fi
+################################################################################
+# VERIFY INTEGRITY
+################################################################################
+
+gpg --keyserver pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
+gpg --keyserver pool.sks-keyservers.net --recv-keys 0x6AFEE6D49E92B601
+gpg --verify ${TOR_SIG_NAME} ${TOR_SRC_NAME} | grep -c "Good signature"
+if [ $? -lt 1 ]; then
+    echo "FAILED to verify the signature" | indent
+    exit 1
+fi
+
+################################################################################
+# COMPILE & INSTALL
+################################################################################
 
 # Finally do some compilation.
-tar -zxf tor-*.tar.gz
+tar -zxf ${TOR_SRC_NAME}
 cd tor-*
 ./configure --prefix=$BUILD_DIR
-if ! [ $? ]; then
+if [ $? -ne 0 ]; then
     echo "FAILED to configure for compliation" | indent
     exit 1
 fi
 
 make install
-if ! [ $? ]; then
+if [ $? -ne 0 ]; then
     echo "FAILED to run make install" | indent
+    exit  1
 fi
 
-# Cache builds to avoid unnecessary wait times.
-echo $TOR_SRC_URL > $CACHE_DIR/.src-dist
 
-cat > ${BUILD_DIR}/bin/hide <<EOF
+cat > ${BUILD_DIR}/bin/${RUN_COMMAND} <<EOF
 #!/usr/bin/env bash
 
 mkdir -p "${HOME}/hidden_service"
@@ -80,6 +93,6 @@ $HOME/bin/tor -f $HOME/etc/tor/torrc &
 exec \$*
 EOF
 
-chmod a+x ${BUILD_DIR}/bin/hide
+chmod a+x ${BUILD_DIR}/bin/${RUN_COMMAND}
 
 echo "Installed Tor successfully" | indent
