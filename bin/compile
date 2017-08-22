@@ -93,7 +93,7 @@ cp -r $CACHE_DIR/tor ${BUILD_DIR}
 # Saves the version just compiled
 echo "${TOR_SRC_NAME}" > $CACHE_DIR/tor_version.txt
 
-cat > ${BUILD_DIR}/bin/${RUN_COMMAND} <<EOF
+cat > ${BUILD_DIR}/tor/bin/${RUN_COMMAND} <<EOF
 #!/usr/bin/env bash
 
 mkdir -p "${HOME}/hidden_service"
@@ -112,7 +112,7 @@ $HOME/bin/tor -f $HOME/etc/tor/torrc &
 exec \$*
 EOF
 
-chmod a+x ${BUILD_DIR}/bin/${RUN_COMMAND}
+chmod a+x ${BUILD_DIR}/tor/bin/${RUN_COMMAND}
 
 echo "Installed Tor successfully" | indent
 
