@@ -16,7 +16,7 @@ With the buildpack installed, you'll need to modify your Procfile such that
 the hidden service will be setup when the app runs.
 
 ```Procfile
-web: ./bin/run_tor <cmd you'd normally run>
+web: ./tor/bin/run_tor <cmd you'd normally run>
 ```
 
 While `web` works just fine, so too will any other process type. Use `web`
@@ -24,7 +24,7 @@ if you want the app to be accessible generally, as well as over Tor. Use
 `<any other type>` (e.g. `foo`), to avoid Heroku's router routing to your app like so:
 
 ```Procfile
-foo: PORT=9999 ./bin/run_tor <cmd you'd normally run>
+foo: PORT=9999 ./tor/bin/run_tor <cmd you'd normally run>
 ```
 
 Your app will only be accessible over Tor, through your configured
