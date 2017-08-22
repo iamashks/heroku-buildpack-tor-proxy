@@ -37,3 +37,9 @@ SHA, for the .onion name. You'll need to provide these as env vars:
 
 * `HIDDEN_PRIVATE_KEY`: The contents of a private_key file
 * `HIDDEN_DOT_ONION`: The onion name for the private_key.
+
+## Features
+
+* Verifies integrity (see yourself how its done, I'm not sure its correct)
+* Caches compilation
+* I'm using it in my [blog](http://hernanex3.com)
