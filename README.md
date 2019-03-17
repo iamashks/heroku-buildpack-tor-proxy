@@ -42,4 +42,3 @@ SHA, for the .onion name. You'll need to provide these as env vars:
 
 * Verifies integrity (see yourself how its done, I'm not sure its correct)
 * Caches compilation
-* I'm using it in my [blog](http://hernanex3.com)
