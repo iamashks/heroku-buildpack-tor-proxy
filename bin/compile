@@ -157,7 +157,11 @@ echo "Configuring the Tor Proxy" | indent
 
 TOR_HASHED_PASS=$("${HEROKU_BUILD_DIR}/tor/bin/tor" --hash-password "$TOR_CONTROL_PASS")
 
-cat > "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
+if [ -n "$TOR_CONF_FILE_URL" ]; then
+  curl -s "$TOR_CONF_FILE_URL" --output "${HOME}/tor/etc/tor/torrc"
+fi
+
+cat >> "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
 #!/usr/bin/env bash
 
 echo "Setting up the control server"
