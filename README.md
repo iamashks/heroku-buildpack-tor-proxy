@@ -21,6 +21,7 @@ $ heroku buildpacks:add https://github.com/iamashks/heroku-buildpack-tor-proxy.g
 You'll need to provide these as env variables ([check this guide][1]):
 
 * `TOR_VERSION`: The version of Tor to install (default: its latest version).
+* `TOR_PROXY_PORT`: The port to be used for the proxy server (default: 9050).
 * `TOR_CONTROL_PORT`: The port to be used for the control server (default: 9051).
 * `TOR_CONTROL_PASS`: The password for the control server (default: "torProxy@123").
 

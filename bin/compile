@@ -23,6 +23,7 @@ export_env_vars() {
     for e in $(ls "$env_dir"); do
       echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
       export "$e=$(cat $env_dir/$e)"
+      echo "$e=$(cat $env_dir/$e)"
       :
     done
   fi
@@ -51,12 +52,16 @@ fi
 
 TOR_SRC_NAME="tor-${TOR_VERSION}.tar.gz"
 
-if [ -z "$TOR_CONTROL_PASS" ]; then
-  TOR_CONTROL_PASS="torProxy@123"
+if [ -z "$TOR_PROXY_PORT" ]; then
+  TOR_PROXY_PORT="9050"
 fi
 
 if [ -z "$TOR_CONTROL_PORT" ]; then
   TOR_CONTROL_PORT="9051"
+fi
+
+if [ -z "$TOR_CONTROL_PASS" ]; then
+  TOR_CONTROL_PASS="torProxy@123"
 fi
 
 TOR_SIG_NAME=${TOR_SRC_NAME}.asc
@@ -101,6 +106,7 @@ fi
 ################################################################################
 # Check Integrity
 ################################################################################
+
 if [ $IS_TOR_CACHED -eq 0 ] ; then
     gpg --keyserver pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
     gpg --keyserver pool.sks-keyservers.net --recv-keys 0x6AFEE6D49E92B601
@@ -115,6 +121,7 @@ fi
 ################################################################################
 # Compile Tor
 ################################################################################
+
 if [ $IS_TOR_CACHED -eq 0 ] ; then
     tar -zxf "$TOR_SRC_NAME"
     cd "tor-${TOR_VERSION}" || echo "FAILED to configure Tor"
@@ -154,6 +161,8 @@ cat > "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
 #!/usr/bin/env bash
 
 echo "Setting up the control server"
+
+echo "SOCKSPort ${TOR_PROXY_PORT}" >> "${HOME}/tor/etc/tor/torrc"
 
 echo "ControlPort ${TOR_CONTROL_PORT}" >> "${HOME}/tor/etc/tor/torrc"
 echo "HashedControlPassword ${TOR_HASHED_PASS}" >> "${HOME}/tor/etc/tor/torrc"
