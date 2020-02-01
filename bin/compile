@@ -158,7 +158,7 @@ echo "Configuring the Tor Proxy" | indent
 TOR_HASHED_PASS=$("${HEROKU_BUILD_DIR}/tor/bin/tor" --hash-password "$TOR_CONTROL_PASS")
 
 if [ -n "$TOR_CONF_FILE_URL" ]; then
-  curl -s "$TOR_CONF_FILE_URL" --output "${HOME}/tor/etc/tor/torrc"
+  wget "$TOR_CONF_FILE_URL" -O "${HEROKU_BUILD_DIR}/tor/etc/tor/torrc"
 fi
 
 cat >> "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
@@ -166,10 +166,13 @@ cat >> "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
 
 echo "Setting up the control server"
 
-echo "SOCKSPort ${TOR_PROXY_PORT}" >> "${HOME}/tor/etc/tor/torrc"
-
-echo "ControlPort ${TOR_CONTROL_PORT}" >> "${HOME}/tor/etc/tor/torrc"
-echo "HashedControlPassword ${TOR_HASHED_PASS}" >> "${HOME}/tor/etc/tor/torrc"
+if grep -q "SOCKSPort ${TOR_PROXY_PORT}" "${HOME}/tor/etc/tor/torrc"; then
+  echo "The configuration is already there, so skipping to write..."
+else
+  echo "SOCKSPort ${TOR_PROXY_PORT}" >> "${HOME}/tor/etc/tor/torrc"
+  echo "ControlPort ${TOR_CONTROL_PORT}" >> "${HOME}/tor/etc/tor/torrc"
+  echo "HashedControlPassword ${TOR_HASHED_PASS}" >> "${HOME}/tor/etc/tor/torrc"
+fi
 
 "${HOME}/tor/bin/tor" -f "${HOME}/tor/etc/tor/torrc" &
 exec \$*
