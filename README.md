@@ -1,44 +1,33 @@
-# Tor Hidden Service Buildpack for Heroku
+# Tor Proxy Buildpack for Heroku
 
-This buildpack sets up a Tor hidden service for your app on Heroku.
+This buildpack sets up a Tor Proxy for your app on Heroku.
 
 ## Setup
 
-Create a Heroku app as normal, with any buildpacks you typically use.
+1] Create a Heroku app as normal with the usual buildpacks.
 
-Then:
+2] Then, add this buildpack in your app (through the [Heroku CLI][2]):
 
 ```bash
-$ heroku buildpacks:add https://github.com/hernanex3/heroku-buildpack-tor.git
+$ heroku buildpacks:add https://github.com/iamashks/heroku-buildpack-tor-proxy.git
 ```
 
-With the buildpack installed, you'll need to modify your Procfile such that
-the hidden service will be setup when the app runs.
+3] With this buildpack installed, Tor Proxy runs automatically on the port: 9050.
 
-```Procfile
-web: ./tor/bin/run_tor <cmd you'd normally run>
-```
-
-While `web` works just fine, so too will any other process type. Use `web`
-if you want the app to be accessible generally, as well as over Tor. Use
-`<any other type>` (e.g. `foo`), to avoid Heroku's router routing to your app like so:
-
-```Procfile
-foo: PORT=9999 ./tor/bin/run_tor <cmd you'd normally run>
-```
-
-Your app will only be accessible over Tor, through your configured
-`.onion` address.
+**NOTE:** Tor Proxy is a SOCKS-proxy and works with SOCKS-supporting applications.
 
 ## Variables
 
-Of course, Tor hidden services require that you provide a private_key and it's
-SHA, for the .onion name. You'll need to provide these as env vars:
+You'll need to provide these as env variables ([check this guide][1]):
 
-* `HIDDEN_PRIVATE_KEY`: The contents of a private_key file
-* `HIDDEN_DOT_ONION`: The onion name for the private_key.
+* `TOR_VERSION`: The version of Tor to install (default: its latest version).
+* `TOR_CONTROL_PORT`: The port to be used for the control server (default: 9051).
+* `TOR_CONTROL_PASS`: The password for the control server (default: "torProxy@123").
 
 ## Features
 
-* Verifies integrity (see yourself how its done, I'm not sure its correct)
 * Caches compilation
+* Verifies integrity (confirm yourself; it's provided as is without any warranty)
+
+[1]: https://devcenter.heroku.com/articles/config-vars#using-the-heroku-dashboard
+[2]: https://devcenter.heroku.com/articles/heroku-cli#getting-started
