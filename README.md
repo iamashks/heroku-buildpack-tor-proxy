@@ -26,6 +26,11 @@ You'll need to provide these as env variables ([check this guide][1]):
 * `TOR_CONTROL_PASS`: The password for the control server (default: "torProxy@123").
 * `TOR_CONF_FILE_URL`: The configuration for Tor to follow (default: Tor's default `torrc`).
 
+**NOTE:** `TOR_PROXY_PORT`, `TOR_CONTROL_PORT`, and `TOR_CONTROL_PASS` override any values 
+you provide in the custom `torrc` file defined by the `TOR_CONF_FILE_URL`. If you need to 
+provide the values for these three variables, provide them through env variables rather than 
+your custom `torrc`. 
+
 ## Features
 
 * Caches compilation
