@@ -11,26 +11,30 @@ HEROKU_CACHE_DIR="$2"
 HEROKU_ENV_DIR="$3"
 
 HEROKU_THIS_DIR=$(dirname "$0")
-HEROKU_PACK_DIR=$(cd "$HEROKU_THIS_DIR"; cd ..; pwd)
+HEROKU_PACK_DIR=$(
+    cd "$HEROKU_THIS_DIR"
+    cd ..
+    pwd
+)
 
 # Essental functions
 
 export_env_vars() {
-  env_dir=$1
-  whitelist_regex=${2:-''}
-  blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
+    env_dir=$1
+    whitelist_regex=${2:-''}
+    blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
 
-  if [ -d "$env_dir" ]; then
-    for e in $(ls "$env_dir"); do
-      echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
-      export "$e=$(cat $env_dir/$e)"
-      :
-    done
-  fi
+    if [ -d "$env_dir" ]; then
+        for e in $(ls "$env_dir"); do
+            echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+                export "$e=$(cat $env_dir/$e)"
+            :
+        done
+    fi
 }
 
 indent() {
-  sed -u 's/^/      /'
+    sed -u 's/^/      /'
 }
 
 # Load env variables
@@ -45,23 +49,23 @@ TOR_COMMAND="run_tor_proxy"
 TOR_DIST_URL="https://dist.torproject.org/"
 
 if [ -z "$TOR_VERSION" ]; then
-  TOR_SRCH=".\..\..\..\.tar"
-  TOR_PACKAGE=$(curl -s "$TOR_DIST_URL" | grep -o -e "$TOR_SRCH" | sort | tail -1)
-  TOR_VERSION="${TOR_PACKAGE/.tar/}"
+    TOR_SRCH=".\..\..\..\.tar"
+    TOR_PACKAGE=$(curl -s "$TOR_DIST_URL" | grep -o -e "$TOR_SRCH" | sort | tail -1)
+    TOR_VERSION="${TOR_PACKAGE/.tar/}"
 fi
 
 TOR_SRC_NAME="tor-${TOR_VERSION}.tar.gz"
 
 if [ -z "$TOR_PROXY_PORT" ]; then
-  TOR_PROXY_PORT="9050"
+    TOR_PROXY_PORT="9050"
 fi
 
 if [ -z "$TOR_CONTROL_PORT" ]; then
-  TOR_CONTROL_PORT="9051"
+    TOR_CONTROL_PORT="9051"
 fi
 
 if [ -z "$TOR_CONTROL_PASS" ]; then
-  TOR_CONTROL_PASS="torProxy@123"
+    TOR_CONTROL_PASS="torProxy@123"
 fi
 
 TOR_SIG_NAME=${TOR_SRC_NAME}.asc
@@ -76,9 +80,9 @@ mkdir -p "$HEROKU_CACHE_DIR"
 grep -wq "${TOR_SRC_NAME}" "${HEROKU_CACHE_DIR}/tor_version.txt"
 
 if [ $? -eq 0 ]; then
-   IS_TOR_CACHED=1
+    IS_TOR_CACHED=1
 else
-   IS_TOR_CACHED=0
+    IS_TOR_CACHED=0
 fi
 
 ################################################################################
@@ -107,7 +111,7 @@ fi
 # Check Integrity
 ################################################################################
 
-if [ $IS_TOR_CACHED -eq 0 ] ; then
+if [ $IS_TOR_CACHED -eq 0 ]; then
     gpg --keyserver pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
     gpg --keyserver pool.sks-keyservers.net --recv-keys 0x6AFEE6D49E92B601
     gpg --verify "$TOR_SIG_NAME" "$TOR_SRC_NAME" | grep -c "Good signature"
@@ -122,7 +126,7 @@ fi
 # Compile Tor
 ################################################################################
 
-if [ $IS_TOR_CACHED -eq 0 ] ; then
+if [ $IS_TOR_CACHED -eq 0 ]; then
     tar -zxf "$TOR_SRC_NAME"
     cd "tor-${TOR_VERSION}" || echo "FAILED to configure Tor"
 
@@ -135,7 +139,7 @@ if [ $IS_TOR_CACHED -eq 0 ] ; then
     make install
     if [ $? -ne 0 ]; then
         echo "FAILED to compile Tor" | indent
-        exit  1
+        exit 1
     fi
 fi
 
@@ -147,7 +151,7 @@ fi
 cp -r "${HEROKU_CACHE_DIR}/tor" "$HEROKU_BUILD_DIR"
 
 # Save the version compiled now
-echo "$TOR_SRC_NAME" > "${HEROKU_CACHE_DIR}/tor_version.txt"
+echo "$TOR_SRC_NAME" >"${HEROKU_CACHE_DIR}/tor_version.txt"
 
 ################################################################################
 # Configure Tor
@@ -158,10 +162,10 @@ echo "Configuring the Tor Proxy" | indent
 TOR_HASHED_PASS=$("${HEROKU_BUILD_DIR}/tor/bin/tor" --hash-password "$TOR_CONTROL_PASS")
 
 if [ -n "$TOR_CONF_FILE_URL" ]; then
-  wget "$TOR_CONF_FILE_URL" -O "${HEROKU_BUILD_DIR}/tor/etc/tor/torrc"
+    wget "$TOR_CONF_FILE_URL" -O "${HEROKU_BUILD_DIR}/tor/etc/tor/torrc"
 fi
 
-cat >> "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
+cat >>"${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
 #!/usr/bin/env bash
 
 echo "Setting up the control server"
@@ -187,7 +191,7 @@ chmod a+x "${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}"
 echo "Activating the auto-runner" | indent
 
 if [ ! -d "${HEROKU_BUILD_DIR}/.profile.d/" ]; then
-  mkdir "${HEROKU_BUILD_DIR}/.profile.d/"
+    mkdir "${HEROKU_BUILD_DIR}/.profile.d/"
 fi
 
 cp "${HEROKU_PACK_DIR}/extra/${TOR_COMMAND}.sh" "${HEROKU_BUILD_DIR}/.profile.d/"
