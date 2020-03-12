@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-echo "Tor Proxy"
+echo "Tor Proxy Buildpack"
 exit 0
