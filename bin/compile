@@ -174,7 +174,9 @@ echo_extra "Configuring Tor Proxy"
 TOR_HASHED_PASS=$("${HEROKU_BUILD_DIR}/tor/bin/tor" --hash-password "$TOR_CONTROL_PASS")
 
 if [ -n "$TOR_CONF_FILE_URL" ]; then
-    wget "$TOR_CONF_FILE_URL" -O "${HEROKU_BUILD_DIR}/tor/etc/tor/torrc"
+    wget "$TOR_CONF_FILE_URL" -O "${HEROKU_BUILD_DIR}/tor/etc/tor/torrc_custom"
+
+    TOR_CONFIG_FILE="${TOR_CONFIG_FILE}_custom"
 fi
 
 cat >>"${HEROKU_BUILD_DIR}/tor/bin/${TOR_COMMAND}" <<EOF
